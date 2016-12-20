@@ -2,4 +2,5 @@ target/
 idea
 logs/
 *.iml
-.DS_Store
+.DS_Storet
+.idea
