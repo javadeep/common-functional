@@ -1,8 +1,13 @@
 package com.javadeep.functional.lang.data;
 
+import com.javadeep.functional.lang.function.CheckedFunction;
+import com.javadeep.functional.lang.function.CheckedRunnable;
 import com.javadeep.functional.lang.function.CheckedSupplier;
 
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * An implementation of Try control.
@@ -18,8 +23,8 @@ public interface Try<T> {
      *
      * @param supplier A checked supplier
      * @param <T> Component type
-     * @return {@code Success(supplier.get())} if no exception occurs, otherwise {@code Failure(throwable)} if an
-     * exception occurs calling {@code supplier.get()}.
+     * @return {@code Success(supplier.get())} if no exception occurs, otherwise {@code Failure(throwable)}
+     * if an exception occurs calling {@code supplier.get()}.
      */
     static <T> Try<T> of(CheckedSupplier<? extends T> supplier) {
         try {
@@ -28,6 +33,210 @@ public interface Try<T> {
             return new Failure<>(t);
         }
     }
+
+    /**
+     * Creates a Try of a CheckedRunnable.
+     *
+     * @param runnable A checked runnable
+     * @return {@code Success(null)} if no exception occurs, otherwise {@code Failure(throwable)}
+     * if an exception occurs calling {@code runnable.run()}.
+     */
+    static Try<Void> run(CheckedRunnable runnable) {
+        try {
+            runnable.run();
+            return new Success<>(null); // null represents the absence of an value, i.e. Void
+        }  catch (Throwable t) {
+            return new Failure<>(t);
+        }
+    }
+
+    /**
+     * Creates a {@link Success} that contains the given {@code value}. Shortcut for {@code new Success<>(value)}.
+     *
+     * @param value A value.
+     * @param <T>   Type of the given {@code value}.
+     * @return A new {@code Success}.
+     */
+    static <T> Try<T> success(T value) {
+        return new Success<>(value);
+    }
+
+    /**
+     * Creates a {@link Failure} that contains the given {@code exception}.
+     * Shortcut for {@code new Failure<>(exception)}.
+     *
+     * @param exception An exception.
+     * @param <T>       Component type of the {@code Try}.
+     * @return A new {@code Failure}.
+     */
+    static <T> Try<T> failure(Throwable exception) {
+        return new Failure<>(exception);
+    }
+
+    /**
+     * Gets the result of this Try if this is a {@code Success} or throws if this is a {@code Failure}.
+     *
+     * @return The result of this Try
+     * @throws RuntimeException if this is a {@code Failure}
+     */
+    T get();
+
+    /**
+     * Gets the cause if this is a Failure or throws if this is a {@code Success}.
+     *
+     * @return The cause if this is a {@code Failure}
+     * @throws UnsupportedOperationException if this is a {@code Success}
+     */
+    Throwable getCause();
+
+    /**
+     * Checks if this is a {@code Success}.
+     *
+     * @return true, if this is a {@code Success}, otherwise false, if this is a {@code Failure}
+     */
+    boolean isSuccess();
+
+    /**
+     * Checks if this is a Failure.
+     *
+     * @return true, if this is a Failure, otherwise false, if this is a Success
+     */
+    boolean isFailure();
+
+    /**
+     * Consumes the value if this is a {@code Success}.
+     *
+     * @param action A value consumer
+     * @return this
+     * @throws NullPointerException if {@code action} is null
+     */
+    default Try<T> onSuccess(Consumer<? super T> action) {
+        Objects.requireNonNull(action, "action is null");
+        if (isSuccess()) {
+            action.accept(get());
+        }
+        return this;
+    }
+
+    /**
+     * Consumes the throwable if this is a {@code Failure}.
+     *
+     * @param action An exception consumer
+     * @return this
+     * @throws NullPointerException if {@code action} is null
+     */
+    default Try<T> onFailure(Consumer<? super Throwable> action) {
+        Objects.requireNonNull(action, "action is null");
+        if (isFailure()) {
+            action.accept(getCause());
+        }
+        return this;
+    }
+
+    /**
+     * Return the value if this is a {@code Success}, otherwise return {@code other}.
+     *
+     * @param other the value to be returned if this is a {@code Failure}
+     * @return the value, if this is a {@code Success}, otherwise {@code other}
+     */
+    default T orElse(T other) {
+        return isSuccess() ? get() : other;
+    }
+
+    /**
+     * Return the value if this is a {@code Success}, otherwise invoke {@code other} and return
+     * the result of that invocation.
+     *
+     * @param other a {@code Supplier} whose result is returned if no value is {@code Success}
+     * @return the value if this is a {@code Success} otherwise the result of {@code other.get()}
+     * @throws NullPointerException if {@code other} is null
+     */
+    default T orElseGet(Supplier<? extends T> other) {
+        Objects.requireNonNull(other, "other is null");
+        return isSuccess() ? get() : other.get();
+    }
+
+    default T orElseMap(Function<? super Throwable, ? extends T> other) {
+        Objects.requireNonNull(other, "other is null");
+        if (isFailure()) {
+            return other.apply(getCause());
+        } else {
+            return get();
+        }
+    }
+
+    default <X extends Throwable> T orElseThrow(Function<? super Throwable, X> exceptionProvider) throws X {
+        Objects.requireNonNull(exceptionProvider, "exceptionProvider is null");
+        if (isFailure()) {
+            throw exceptionProvider.apply(getCause());
+        } else {
+            return get();
+        }
+    }
+
+    /**
+     * Runs the given checked function if this is a {@code Success},
+     * passing the result of the current expression to it.
+     * If this expression is a {@code Failure} then it'll return a new
+     * {@code Failure} of type R with the original exception.
+     *
+     * @param <U>    The new component type
+     * @param mapper A checked function
+     * @return a {@code Try}
+     * @throws NullPointerException if {@code mapper} is null
+     */
+    default <U> Try<U> map(Function<? super T, ? extends U> mapper) {
+        Objects.requireNonNull(mapper, "mapper is null");
+        if (isFailure()) {
+            return (Failure<U>) this;
+        }
+        try {
+            return new Success<>(mapper.apply(get()));
+        } catch (Throwable t) {
+            return new Failure<>(t);
+        }
+    }
+
+    /**
+     * Returns {@code this}, if this is a {@code Success},
+     * otherwise tries to recover the exception of the failure with {@code f},
+     * i.e. calling {@code Try.of(() -> f.apply(throwable))}.
+     *
+     * @param f A recovery function taking a Throwable
+     * @return a {@code Try}
+     * @throws NullPointerException if {@code f} is null
+     */
+    default Try<T> recover(CheckedFunction<? super Throwable, ? extends T> f) {
+        Objects.requireNonNull(f, "f is null");
+        if (isFailure()) {
+            return Try.of(() -> f.apply(getCause()));
+        }
+        return this;
+    }
+
+    /**
+     * Returns {@code this}, if this is a Success,
+     * otherwise tries to recover the exception of the failure with {@code f},
+     * i.e. calling {@code f.apply(cause.getCause())}. If an error occurs recovering a Failure, then the new Failure is
+     * returned.
+     *
+     * @param f A recovery function taking a Throwable
+     * @return a {@code Try}
+     * @throws NullPointerException if {@code f} is null
+     */
+    default Try<T> recoverWith(Function<? super Throwable, ? extends Try<? extends T>> f) {
+        Objects.requireNonNull(f, "f is null");
+        if (isFailure()) {
+            try {
+                return (Try<T>) f.apply(getCause());
+            } catch (Throwable t) {
+                return new Failure<>(t);
+            }
+        } else {
+            return this;
+        }
+    }
+
 
     /**
      * A succeeded Try.
@@ -40,8 +249,49 @@ public interface Try<T> {
 
         private final T value;
 
+        /**
+         * Constructs a Success.
+         *
+         * @param value The value of this Success.
+         */
         private Success(T value) {
             this.value = value;
+        }
+
+        @Override
+        public T get() {
+            return value;
+        }
+
+        @Override
+        public Throwable getCause() {
+            throw new UnsupportedOperationException("getCause on Success");
+        }
+
+        @Override
+        public boolean isSuccess() {
+            return true;
+        }
+
+        @Override
+        public boolean isFailure() {
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this
+                    || (obj instanceof Success && Objects.equals(value, ((Success<?>) obj).value));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(value);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Success(%s)", value.toString());
         }
     }
 
@@ -54,11 +304,41 @@ public interface Try<T> {
      */
     final class Failure<T> implements Try<T> {
 
-        private final Throwable cause;
+        private final RuntimeException cause;
 
+        /**
+         * Constructs a Failure.
+         *
+         * @param exception A cause of type Throwable, may not be null.
+         */
         private Failure(Throwable exception) {
-            Objects.requireNonNull(exception, "exception is null");
-            this.cause = exception;
+            this.cause = new RuntimeException(exception);
+        }
+
+        @Override
+        public T get() {
+            throw cause;
+        }
+
+        @Override
+        public Throwable getCause() {
+            return cause.getCause();
+        }
+
+        @Override
+        public boolean isSuccess() {
+            return false;
+        }
+
+        @Override
+        public boolean isFailure() {
+            return true;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this
+                    || (obj instanceof Failure && Objects.equals(cause, ((Failure<?>) obj).cause));
         }
     }
 }

@@ -4,6 +4,8 @@ package com.javadeep.functional.lang.function;
  * A {@linkplain java.util.function.Supplier} which may throw.
  *
  * @param <R> the type of results supplied by this supplier
+ * @author baojie
+ * @since 1.0.0
  */
 
 @FunctionalInterface
