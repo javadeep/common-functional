@@ -156,15 +156,29 @@ public interface Try<T> {
         return isSuccess() ? get() : other.get();
     }
 
+    /**
+     * Return the value if this is a {@code Success}, otherwise invoke {@code other} and return
+     * the result of that invocation.
+     *
+     * @param other a {@code Function} whose result is returned if no value is {@code Success}
+     * @return the value if this is a {@code Success} otherwise the result of {@code other.apply(getCause())}
+     * @throws NullPointerException if {@code other} is null
+     */
     default T orElseMap(Function<? super Throwable, ? extends T> other) {
         Objects.requireNonNull(other, "other is null");
-        if (isFailure()) {
-            return other.apply(getCause());
-        } else {
-            return get();
-        }
+        return isFailure() ? other.apply(getCause()) : get();
     }
 
+    /**
+     * Return the value if this is a {@code Success}, otherwise invoke {@code exceptionProvider} and throw
+     * the result of that invocation.
+     *
+     * @param exceptionProvider a {@code Function} whose result is throwed if no value is {@code Success}
+     * @param <X> The new type to throw
+     * @return the value if this is a {@code Success} throw {@code exceptionProvider.apply(getCause())}
+     * @throws X throw {@code exceptionProvider.apply(getCause())} if this is a {@code Failure}
+     * @throws NullPointerException if {@code exceptionProvider} is null
+     */
     default <X extends Throwable> T orElseThrow(Function<? super Throwable, X> exceptionProvider) throws X {
         Objects.requireNonNull(exceptionProvider, "exceptionProvider is null");
         if (isFailure()) {
