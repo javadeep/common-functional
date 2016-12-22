@@ -1,6 +1,5 @@
 package com.javadeep.functional.lang.data;
 
-import com.javadeep.functional.lang.function.CheckedFunction;
 import com.javadeep.functional.lang.function.CheckedRunnable;
 import com.javadeep.functional.lang.function.CheckedSupplier;
 
@@ -204,11 +203,7 @@ public interface Try<T> {
         if (isFailure()) {
             return (Failure<U>) this;
         }
-        try {
-            return new Success<>(mapper.apply(get()));
-        } catch (Throwable t) {
-            return new Failure<>(t);
-        }
+        return Try.of(() -> mapper.apply(get()));
     }
 
     /**
@@ -220,7 +215,7 @@ public interface Try<T> {
      * @return a {@code Try}
      * @throws NullPointerException if {@code f} is null
      */
-    default Try<T> recover(CheckedFunction<? super Throwable, ? extends T> f) {
+    default Try<T> recover(Function<? super Throwable, ? extends T> f) {
         Objects.requireNonNull(f, "f is null");
         if (isFailure()) {
             return Try.of(() -> f.apply(getCause()));
@@ -229,12 +224,12 @@ public interface Try<T> {
     }
 
     /**
-     * Returns {@code this}, if this is a Success,
-     * otherwise tries to recover the exception of the failure with {@code f},
-     * i.e. calling {@code f.apply(cause.getCause())}. If an error occurs recovering a Failure, then the new Failure is
-     * returned.
+     * Returns {@code this}, if this is a {@code Success},
+     * otherwise tries to recover the exception of the {@code Failure} with {@code f},
+     * i.e. calling {@code f.apply(cause.getCause())}. If an error occurs recovering a {@code Failure},
+     * then the new {@code Failure} is returned.
      *
-     * @param f A recovery function taking a Throwable
+     * @param f A recovery function taking a {@code Throwable}
      * @return a {@code Try}
      * @throws NullPointerException if {@code f} is null
      */
@@ -248,6 +243,25 @@ public interface Try<T> {
             }
         } else {
             return this;
+        }
+    }
+
+    /**
+     * Folds either the success or the failure side of this disjunction.
+     *
+     * @param successMapper maps the value if this is a {@code Success}
+     * @param failureMapper maps the cause if this is a {@code Failure}
+     * @param <U> type of the folded value
+     * @return A value of type U
+     */
+    default <U> U fold(Function<? super T, ? extends U> successMapper,
+                       Function<? super Throwable, ? extends U> failureMapper) {
+        Objects.requireNonNull(successMapper, "successMapper is null");
+        Objects.requireNonNull(failureMapper, "failureMapper is null");
+        if (isSuccess()) {
+            return successMapper.apply(get());
+        } else {
+            return failureMapper.apply(getCause());
         }
     }
 
