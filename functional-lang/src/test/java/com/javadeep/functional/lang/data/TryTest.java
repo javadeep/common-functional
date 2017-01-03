@@ -65,7 +65,13 @@ public class TryTest {
     }
 
     @Test
-    public void testOrElse() {
+    public void testOrElse_success() {
+        Assert.assertEquals(Integer.valueOf(1),
+                Try.of(() -> 3 / 2).orElse(5));
+    }
+
+    @Test
+    public void testOrElse_failure() {
         Assert.assertEquals(Integer.valueOf(3),
                 Try.<Integer>of(() -> {
                     throw new NullPointerException();
