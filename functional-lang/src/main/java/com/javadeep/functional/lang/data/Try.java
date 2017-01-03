@@ -233,11 +233,11 @@ public interface Try<T> {
      * @return a {@code Try}
      * @throws NullPointerException if {@code f} is null
      */
-    default Try<T> recoverWith(Function<? super Throwable, ? extends Try<? extends T>> f) {
+    default Try<T> recoverWith(Function<? super Throwable, ? extends Try<T>> f) {
         Objects.requireNonNull(f, "f is null");
         if (isFailure()) {
             try {
-                return (Try<T>) f.apply(getCause());
+                return f.apply(getCause());
             } catch (Throwable t) {
                 return new Failure<>(t);
             }
@@ -265,6 +265,27 @@ public interface Try<T> {
         }
     }
 
+    /**
+     * Applies the action to the value.
+     *
+     * @param action A Consumer
+     * @return this {@code Try}
+     * @throws NullPointerException if {@code action} is null
+     */
+    default Try<T> peek(Consumer<? super Try<T>> action) {
+        Objects.requireNonNull(action, "action is null");
+        action.accept(this);
+        return this;
+    }
+
+    /**
+     * Converts this {@code Try} to an {@link Either}.
+     *
+     * @return A new {@code Either}
+     */
+    default Either<Throwable, T> toEither() {
+        return isSuccess() ? Either.right(get()) : Either.left(getCause());
+    }
 
     /**
      * A succeeded Try.
