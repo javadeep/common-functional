@@ -46,5 +46,5 @@ public class EitherTest {
         Assert.assertEquals(Either.right(5),
                 Either.<Exception, String>right("abc").map(e -> new Exception(), s -> 5));
     }
-    
+
 }
