@@ -13,8 +13,15 @@ import java.util.stream.Stream;
 public class EitherTest {
 
     @Test
-    public void testOrElse() {
-        Assert.assertEquals(Integer.valueOf(5), Either.<Throwable, Integer>left(new NullPointerException()).orElse(5));
+    public void testOrElse_left() {
+        Assert.assertEquals(Integer.valueOf(5),
+                Either.<Throwable, Integer>left(new NullPointerException()).orElse(5));
+    }
+
+    @Test
+    public void testOrElse_right() {
+        Assert.assertEquals(Integer.valueOf(5),
+                Either.right(5).orElse(3));
     }
 
     @Test
@@ -47,4 +54,28 @@ public class EitherTest {
                 Either.<Exception, String>right("abc").map(e -> new Exception(), s -> 5));
     }
 
+    @Test
+    public void testMapRight() {
+        Assert.assertEquals(Either.right(5),
+                Either.right("abc").mapRight(s -> 5));
+    }
+
+    @Test
+    public void testMapLeft() {
+        Assert.assertEquals(Either.left(5),
+                Either.left("abc").mapLeft(s -> 5));
+    }
+
+    @Test
+    public void testFold() {
+        Assert.assertEquals(Integer.valueOf(5),
+                Either.<Exception, String>right("abc").fold(e -> 1, s -> 5));
+    }
+
+    @Test
+    public void testPeek() {
+        List<Integer> integers = Stream.of(1, 2, 3).collect(Collectors.toList());
+        Either.right(5).peek(either -> integers.set(0, either.getRight()));
+        Assert.assertEquals(Integer.valueOf(5), integers.get(0));
+    }
 }
