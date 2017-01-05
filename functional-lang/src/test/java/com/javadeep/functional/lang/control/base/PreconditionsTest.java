@@ -12,13 +12,23 @@ import java.util.stream.Stream;
 public class PreconditionsTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCheckArgument_withoutMessage() {
-        Preconditions.checkArgument(false);
+    public void testCheckArgument_withoutMessage_false() {
+        Preconditions.checkArgument(!Collections.emptyList().isEmpty());
+    }
+
+    @Test
+    public void testCheckArgument_withoutMessage_true() {
+        Preconditions.checkArgument(true);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCheckArgument_withMessageProvider() {
-        Preconditions.checkArgument(false, () -> "message");
+    public void testCheckArgument_withMessageProvider_false() {
+        Preconditions.checkArgument(false, () -> "message1");
+    }
+
+    @Test
+    public void testCheckArgument_withMessageProvider_true() {
+        Preconditions.checkArgument(true, () -> "message2");
     }
 
     @Test(expected = NullPointerException.class)
@@ -26,9 +36,14 @@ public class PreconditionsTest {
         Preconditions.checkNotEmpty((Integer[]) null);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testCheckNotEmpty_array_withMessage() {
+        Preconditions.checkNotEmpty((Integer[]) null, "msg");
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testCheckNotEmpty_array_withMessageProvider() {
-        Preconditions.checkNotEmpty(Stream.of().toArray(), () -> "message");
+        Preconditions.checkNotEmpty(Stream.of().toArray(), () -> "message3");
     }
 
     @Test(expected = NullPointerException.class)
@@ -36,8 +51,13 @@ public class PreconditionsTest {
         Preconditions.checkNotEmpty((List<Integer>)null);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testCheckNotEmpty_collection_withMessage() {
+        Preconditions.checkNotEmpty((List<Integer>)null, "msg2");
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testCheckNotEmpty_collection_withMessageProvider() {
-        Preconditions.checkNotEmpty(Collections.emptyList(), () -> "message");
+        Preconditions.checkNotEmpty(Collections.emptyList(), () -> "message4");
     }
 }

@@ -58,7 +58,7 @@ public class RetryPolicyTest {
     }
 
     @Test
-    public void testRetryWhen() {
+    public void testRetryWhen_true() {
         Assert.assertEquals(true,
                 RetryPolicy.<Integer>initWithMaxRetries(1)
                         .retryWhen(4)
@@ -66,10 +66,26 @@ public class RetryPolicyTest {
     }
 
     @Test
-    public void testWithDelay() {
+    public void testRetryWhen_false() {
+        Assert.assertEquals(false,
+                RetryPolicy.<Integer>initWithMaxRetries(1)
+                        .retryWhen(3)
+                        .canRetryFor(Try.of(() -> 4), 0));
+    }
+
+    @Test
+    public void testWithDelay_ms() {
         Assert.assertEquals(Duration.of(10, TimeUnit.SECONDS),
                 RetryPolicy.<Integer>initWithMaxRetries(1)
                         .withDelay(10000, TimeUnit.MILLISECONDS)
+                        .getDelay());
+    }
+
+    @Test
+    public void testWithDelay_s() {
+        Assert.assertEquals(Duration.of(10, TimeUnit.SECONDS),
+                RetryPolicy.<Integer>initWithMaxRetries(1)
+                        .withDelay(10, TimeUnit.SECONDS)
                         .getDelay());
     }
 }
