@@ -4,6 +4,7 @@ import com.javadeep.functional.lang.control.base.Preconditions;
 import com.javadeep.functional.lang.data.Duration;
 import com.javadeep.functional.lang.data.Try;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -17,16 +18,11 @@ import java.util.stream.Stream;
  * @author baojie
  * @since 1.0.0
  */
-public final class RetryPolicy {
-
-    /**
-     * The retry policy for never retries.
-     */
-    public static RetryPolicy NEVER = initWithMaxRetries(0);
+public final class RetryPolicy<T> {
 
     private final int maxRetries;
     private Duration delay;
-    private List<Predicate<Try<Object>>> retryConditions = new LinkedList<>();
+    private List<Predicate<Try<T>>> retryConditions = new LinkedList<>();
 
     /**
      * Constructs a {@code RetryPolicy}.
@@ -38,13 +34,24 @@ public final class RetryPolicy {
     }
 
     /**
+     * Init the retry policy of never retry.
+     *
+     * @return the instance of <code>RetryPolicy</code>
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> RetryPolicy<T> never() {
+        return initWithMaxRetries(0);
+    }
+
+    /**
      * Init the retry policy by set the max number of retries to perform. {@code -1} indicates to retry forever.
      *
      * @param maxRetries the max number of retry times
      * @return the instance of <code>RetryPolicy</code>
      * @throws IllegalArgumentException if {@code maxRetries} less than {@code -1}
      */
-    public static RetryPolicy initWithMaxRetries(int maxRetries) {
+    @SuppressWarnings("unchecked")
+    public static <T> RetryPolicy<T> initWithMaxRetries(int maxRetries) {
         Preconditions.checkArgument(maxRetries >= -1, "maxRetries must be greater than or equal to -1");
         return new RetryPolicy(maxRetries);
     }
@@ -57,7 +64,7 @@ public final class RetryPolicy {
      * @return The instance of <code>RetryPolicy</code>.
      * @throws NullPointerException if {@code resultPredicate} is null.
      */
-    public RetryPolicy retryIf(Predicate<? extends Object> resultPredicate) {
+    public final RetryPolicy<T> retryIf(Predicate<T> resultPredicate) {
         Objects.requireNonNull(resultPredicate, "resultPredicate is null");
         retryConditions.add(t -> t.fold(resultPredicate::test, failure -> true));
         return this;
@@ -71,22 +78,26 @@ public final class RetryPolicy {
      * @throws NullPointerException if {@code failures} is null.
      * @throws IllegalArgumentException if {@code failures} is empty.
      */
-    public RetryPolicy retryOn(Class<? extends Throwable> ... failures) {
-        Objects.requireNonNull(failures, "failures is null");
-        return retryOn(Stream.of(failures));
+    @SafeVarargs
+    public final RetryPolicy<T> retryOn(Class<? extends Throwable>... failures) {
+        Preconditions.checkNotEmpty(failures, "failures is empty");
+        retryConditions.add(t -> t.fold(v -> false,
+                e -> Stream.of(failures).anyMatch((f -> f.isAssignableFrom(e.getClass())))));
+        return this;
     }
 
     /**
      * Specifies the failures to retry on. Any failure that is assignable from the {@code failures} will be retried.
      *
-     * @param failures The stream of failures.
+     * @param failures The collection of failures.
      * @return The instance of <code>RetryPolicy</code>.
      * @throws NullPointerException if {@code failures} is null.
      * @throws IllegalArgumentException if {@code failures} is empty.
      */
-    public RetryPolicy retryOn(Stream<Class<? extends Throwable>> failures) {
+    public final RetryPolicy<T> retryOn(Collection<Class<? extends Throwable>> failures) {
         Preconditions.checkNotEmpty(failures, "failures is empty");
-        retryConditions.add(t -> t.fold(v -> false, e -> failures.anyMatch((f -> f.isAssignableFrom(e.getClass())))));
+        retryConditions.add(t -> t.fold(v -> false,
+                e -> failures.stream().anyMatch((f -> f.isAssignableFrom(e.getClass())))));
         return this;
     }
 
@@ -97,9 +108,10 @@ public final class RetryPolicy {
      * @return The instance of <code>RetryPolicy</code>.
      * @throws NullPointerException if {@code failurePredicate} is null.
      */
-    public RetryPolicy retryOn(Predicate<? extends Throwable> failurePredicate) {
+    @SuppressWarnings("unchecked")
+    public final RetryPolicy<T> retryOn(Predicate<? extends Throwable> failurePredicate) {
         Objects.requireNonNull(failurePredicate, "failurePredicate is null");
-        retryConditions.add(t -> t.fold(v -> false, failurePredicate::test));
+        retryConditions.add(t -> t.fold(v -> false, ((Predicate<Throwable>) failurePredicate)::test));
         return this;
     }
 
@@ -110,7 +122,7 @@ public final class RetryPolicy {
      * @param result The result need matches.
      * @return The instance of <code>RetryPolicy</code>.
      */
-    public RetryPolicy retryWhen(Object result) {
+    public final RetryPolicy<T> retryWhen(T result) {
         retryConditions.add(t -> t.fold(v -> Objects.equals(v, result), e -> true));
         return this;
     }
@@ -125,10 +137,25 @@ public final class RetryPolicy {
      * @throws NullPointerException if {@code timeUnit} is null.
      * @throws IllegalArgumentException if {@code timeUnit} is less than 0.
      */
-    public RetryPolicy withDelay(long delay, TimeUnit timeUnit) {
+    public final RetryPolicy<T> withDelay(long delay, TimeUnit timeUnit) {
         Objects.requireNonNull(timeUnit, "timeUnit is null");
         Preconditions.checkArgument(delay > 0, "delay must be greater than 0");
-        this.delay = new Duration(delay, timeUnit);
+        this.delay = Duration.of(delay, timeUnit);
         return this;
+    }
+
+    /**
+     * Returns whether an execution result can be retried given the configured retry conditions.
+     *
+     * @param result The execution result.
+     * @param retryCount the times has been retried.
+     * @return true if result can be retried, false otherwise.
+     */
+    public final boolean canRetryFor(Try<T> result, int retryCount) {
+        return retryCount < maxRetries && retryConditions.stream().anyMatch(p -> p.test(result));
+    }
+
+    public Duration getDelay() {
+        return delay;
     }
 }

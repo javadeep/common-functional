@@ -1,8 +1,8 @@
 package com.javadeep.functional.lang.control.base;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * Help a method or constructor check whether it was invoked correctly.
@@ -56,25 +56,48 @@ public final class Preconditions {
         }
     }
 
-    public static void checkNotEmpty(Stream<? extends Object> reference) {
+    public static void checkNotEmpty(Collection<?> reference) {
         Objects.requireNonNull(reference);
-        if (reference.count() <= 0) {
+        if (reference.size() <= 0) {
             throw new IllegalArgumentException();
         }
     }
 
-    public static void checkNotEmpty(Stream<? extends Object> reference, String message) {
+    public static void checkNotEmpty(Collection<?> reference, String message) {
         Objects.requireNonNull(message);
         Objects.requireNonNull(reference, message);
-        if (reference.count() <= 0) {
+        if (reference.size() <= 0) {
             throw new IllegalArgumentException(message);
         }
     }
 
-    public static void checkNotEmpty(Stream<? extends Object> reference, Supplier<String> messageSupplier) {
+    public static void checkNotEmpty(Collection<?> reference, Supplier<String> messageSupplier) {
         Objects.requireNonNull(messageSupplier);
         Objects.requireNonNull(reference, messageSupplier);
-        if (reference.count() <= 0) {
+        if (reference.size() <= 0) {
+            throw new IllegalArgumentException(messageSupplier.get());
+        }
+    }
+
+    public static void checkNotEmpty(Object[] reference) {
+        Objects.requireNonNull(reference);
+        if (reference.length <= 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public static void checkNotEmpty(Object[] reference, String message) {
+        Objects.requireNonNull(message);
+        Objects.requireNonNull(reference, message);
+        if (reference.length <= 0) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void checkNotEmpty(Object[] reference, Supplier<String> messageSupplier) {
+        Objects.requireNonNull(messageSupplier);
+        Objects.requireNonNull(reference, messageSupplier);
+        if (reference.length <= 0) {
             throw new IllegalArgumentException(messageSupplier.get());
         }
     }

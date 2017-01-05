@@ -14,7 +14,7 @@ public final class Duration {
     /**
      * Duration for zero.
      */
-    public static final Duration NONE = new Duration(0, TimeUnit.MILLISECONDS);
+    public static final Duration NONE = Duration.of(0, TimeUnit.MILLISECONDS);
 
     private final long length;
     private final TimeUnit timeUnit;
@@ -24,12 +24,22 @@ public final class Duration {
      *
      * @param length length.
      * @param timeUnit timeUnit.
-     * @throws NullPointerException if {@code timeUnit} is null.
      */
-    public Duration(long length, TimeUnit timeUnit) {
-        Objects.requireNonNull(timeUnit, "timeUnit is null");
+    private Duration(long length, TimeUnit timeUnit) {
         this.length = length;
         this.timeUnit = timeUnit;
+    }
+
+    /**
+     * Construct the instance of <code>Duration</code> by length and timeUnit.
+     *
+     * @param length length.
+     * @param timeUnit timeUnit.
+     * @throws NullPointerException if {@code timeUnit} is null.
+     */
+    public static Duration of(long length, TimeUnit timeUnit) {
+        Objects.requireNonNull(timeUnit, "timeUnit is null");
+        return new Duration(length, timeUnit);
     }
 
     /**
@@ -37,7 +47,7 @@ public final class Duration {
      *
      * @return The converted duration.
      */
-    public long toNanos() {
+    public final long toNanos() {
         return timeUnit.toNanos(length);
     }
 
