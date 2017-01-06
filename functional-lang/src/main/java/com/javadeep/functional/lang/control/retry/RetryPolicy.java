@@ -150,8 +150,13 @@ public final class RetryPolicy<T> {
      * @param result The execution result.
      * @param retryCount the times has been retried.
      * @return true if result can be retried, false otherwise.
+     * @throws NullPointerException if {@code result} is null.
      */
     public final boolean canRetryFor(Try<T> result, int retryCount) {
+        Objects.requireNonNull(result, "result is null");
+        if (retryConditions.size() == 0) {
+            return result.isFailure();
+        }
         return retryCount < maxRetries && retryConditions.stream().anyMatch(p -> p.test(result));
     }
 

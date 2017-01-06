@@ -62,14 +62,16 @@ public final class Preconditions {
      * Ensures the collection is not empty.
      *
      * @param reference A collection.
+     * @return {@code reference} if not empty.
      * @throws NullPointerException if {@code reference} is null.
      * @throws IllegalArgumentException if {@code reference} is empty.
      */
-    public static void checkNotEmpty(Collection<?> reference) {
+    public static <T> Collection<T> checkNotEmpty(Collection<T> reference) {
         Objects.requireNonNull(reference);
         if (reference.size() <= 0) {
             throw new IllegalArgumentException();
         }
+        return reference;
     }
 
     /**
@@ -77,15 +79,17 @@ public final class Preconditions {
      *
      * @param reference A collection.
      * @param message The exception message to use if the check fails.
+     * @return {@code reference} if not empty.
      * @throws NullPointerException if {@code reference} is null or {@code message} is null.
      * @throws IllegalArgumentException if {@code reference} is empty.
      */
-    public static void checkNotEmpty(Collection<?> reference, String message) {
+    public static <T> Collection<T> checkNotEmpty(Collection<T> reference, String message) {
         Objects.requireNonNull(message);
         Objects.requireNonNull(reference, message);
         if (reference.size() <= 0) {
             throw new IllegalArgumentException(message);
         }
+        return reference;
     }
 
     /**
@@ -93,29 +97,33 @@ public final class Preconditions {
      *
      * @param reference A collection.
      * @param messageSupplier A supplier of the exception message to use if the check fails.
+     * @return {@code reference} if not empty.
      * @throws NullPointerException if {@code reference} is null or {@code messageSupplier} is null.
      * @throws IllegalArgumentException if {@code reference} is empty.
      */
-    public static void checkNotEmpty(Collection<?> reference, Supplier<String> messageSupplier) {
+    public static <T> Collection<T> checkNotEmpty(Collection<T> reference, Supplier<String> messageSupplier) {
         Objects.requireNonNull(messageSupplier);
         Objects.requireNonNull(reference, messageSupplier);
         if (reference.size() <= 0) {
             throw new IllegalArgumentException(messageSupplier.get());
         }
+        return reference;
     }
 
     /**
      * Ensures an array is not empty.
      *
      * @param reference An array.
+     * @return {@code reference} if not empty.
      * @throws NullPointerException if {@code reference} is null.
      * @throws IllegalArgumentException if {@code reference} is empty.
      */
-    public static void checkNotEmpty(Object[] reference) {
+    public static <T> T[] checkNotEmpty(T[] reference) {
         Objects.requireNonNull(reference);
         if (reference.length <= 0) {
             throw new IllegalArgumentException();
         }
+        return reference;
     }
 
     /**
@@ -123,15 +131,17 @@ public final class Preconditions {
      *
      * @param reference An array.
      * @param message The exception message to use if the check fails.
+     * @return {@code reference} if not empty.
      * @throws NullPointerException if {@code reference} is null or {@code message} is null.
      * @throws IllegalArgumentException if {@code reference} is empty.
      */
-    public static void checkNotEmpty(Object[] reference, String message) {
+    public static <T> T[] checkNotEmpty(T[] reference, String message) {
         Objects.requireNonNull(message);
         Objects.requireNonNull(reference, message);
         if (reference.length <= 0) {
             throw new IllegalArgumentException(message);
         }
+        return reference;
     }
 
     /**
@@ -139,14 +149,16 @@ public final class Preconditions {
      *
      * @param reference An array.
      * @param messageSupplier A supplier of the exception message to use if the check fails.
+     * @return {@code reference} if not empty.
      * @throws NullPointerException if {@code reference} is null or {@code messageSupplier} is null.
      * @throws IllegalArgumentException if {@code reference} is empty.
      */
-    public static void checkNotEmpty(Object[] reference, Supplier<String> messageSupplier) {
+    public static <T> T[] checkNotEmpty(T[] reference, Supplier<String> messageSupplier) {
         Objects.requireNonNull(messageSupplier);
         Objects.requireNonNull(reference, messageSupplier);
         if (reference.length <= 0) {
             throw new IllegalArgumentException(messageSupplier.get());
         }
+        return reference;
     }
 }
