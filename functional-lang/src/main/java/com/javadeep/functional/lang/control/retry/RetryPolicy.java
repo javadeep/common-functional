@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public final class RetryPolicy<T> {
 
     private final int maxRetries;
-    private Duration delay;
+    private Duration delay = Duration.NONE;
     private List<Predicate<Try<T>>> retryConditions = new LinkedList<>();
 
     /**
@@ -36,6 +36,7 @@ public final class RetryPolicy<T> {
     /**
      * Init the retry policy of never retry.
      *
+     * @param <T> the result type.
      * @return the instance of <code>RetryPolicy</code>
      */
     @SuppressWarnings("unchecked")
@@ -46,6 +47,7 @@ public final class RetryPolicy<T> {
     /**
      * Init the retry policy by set the max number of retries to perform. {@code -1} indicates to retry forever.
      *
+     * @param <T> the result type.
      * @param maxRetries the max number of retry times
      * @return the instance of <code>RetryPolicy</code>
      * @throws IllegalArgumentException if {@code maxRetries} less than {@code -1}
@@ -154,10 +156,15 @@ public final class RetryPolicy<T> {
      */
     public final boolean canRetryFor(Try<T> result, int retryCount) {
         Objects.requireNonNull(result, "result is null");
+
+        if (maxRetries != -1 && retryCount >= maxRetries) {
+            return false;
+        }
+
         if (retryConditions.size() == 0) {
             return result.isFailure();
         }
-        return retryCount < maxRetries && retryConditions.stream().anyMatch(p -> p.test(result));
+        return retryConditions.stream().anyMatch(p -> p.test(result));
     }
 
     public Duration getDelay() {

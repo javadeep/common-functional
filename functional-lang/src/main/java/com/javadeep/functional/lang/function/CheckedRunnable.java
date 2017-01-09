@@ -1,5 +1,7 @@
 package com.javadeep.functional.lang.function;
 
+import java.util.concurrent.Callable;
+
 /**
  * A {@linkplain java.lang.Runnable} which may throw.
  *
@@ -15,4 +17,21 @@ public interface CheckedRunnable {
      * @throws Throwable Throwable if an error occurs
      */
     void run() throws Throwable;
+
+    /**
+     * Transform <code>CheckedRunnable</code> to <code>Callable</code>.
+     *
+     * @param <T> the result type.
+     * @return The result function of <code>Callable</code>.
+     */
+    default <T> Callable<T> toCallable() {
+        return () -> {
+            try {
+                run();
+            } catch (Throwable e) {
+                throw new Exception(e);
+            }
+            return null;
+        };
+    }
 }

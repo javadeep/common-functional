@@ -51,6 +51,15 @@ public final class Duration {
         return timeUnit.toNanos(length);
     }
 
+    /**
+     * Performs a {@link Thread#sleep(long, int) Thread.sleep} using time unit.
+     *
+     * @throws InterruptedException if interrupted while sleeping
+     */
+    public final void sleep() throws InterruptedException {
+        timeUnit.sleep(length);
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj == this
