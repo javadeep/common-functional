@@ -83,9 +83,7 @@ public final class RetryPolicy<T> {
     @SafeVarargs
     public final RetryPolicy<T> retryOn(Class<? extends Throwable>... failures) {
         Preconditions.checkNotEmpty(failures, "failures is empty");
-        retryConditions.add(t -> t.fold(v -> false,
-                e -> Stream.of(failures).anyMatch((f -> f.isAssignableFrom(e.getClass())))));
-        return this;
+        return retryOn(Stream.of(failures));
     }
 
     /**
@@ -98,8 +96,20 @@ public final class RetryPolicy<T> {
      */
     public final RetryPolicy<T> retryOn(Collection<Class<? extends Throwable>> failures) {
         Preconditions.checkNotEmpty(failures, "failures is empty");
+        return retryOn(failures.stream());
+    }
+
+    /**
+     * Specifies the failures to retry on. Any failure that is assignable from the {@code failures} will be retried.
+     *
+     * @param failures The stream of failures.
+     * @return The instance of <code>RetryPolicy</code>.
+     * @throws NullPointerException if {@code failures} is null.
+     */
+    public final RetryPolicy<T> retryOn(Stream<Class<? extends Throwable>> failures) {
+        Objects.requireNonNull(failures, "failures is null");
         retryConditions.add(t -> t.fold(v -> false,
-                e -> failures.stream().anyMatch((f -> f.isAssignableFrom(e.getClass())))));
+                e -> failures.anyMatch((f -> f.isAssignableFrom(e.getClass())))));
         return this;
     }
 

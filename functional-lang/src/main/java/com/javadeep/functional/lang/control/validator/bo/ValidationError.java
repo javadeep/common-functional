@@ -35,7 +35,7 @@ public final class ValidationError {
          * @throws NullPointerException if {@code errorMsg} is null
          */
         private Builder(String errorMsg) {
-            this.errorMsg = Objects.requireNonNull(errorMsg);
+            this.errorMsg = Objects.requireNonNull(errorMsg, "errorMsg is null");
         }
 
         /**
@@ -46,7 +46,7 @@ public final class ValidationError {
          * @throws NullPointerException if {@code field} is null
          */
         public final Builder field(String field) {
-            this.field = Objects.requireNonNull(field);
+            this.field = Objects.requireNonNull(field, "field is null");
             return this;
         }
 
