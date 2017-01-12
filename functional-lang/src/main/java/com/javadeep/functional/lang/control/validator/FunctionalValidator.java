@@ -2,7 +2,6 @@ package com.javadeep.functional.lang.control.validator;
 
 import com.javadeep.functional.lang.control.validator.bo.ValidationError;
 import com.javadeep.functional.lang.control.validator.bo.ValidationResult;
-import com.javadeep.functional.lang.control.validator.bo.ValidatorContext;
 import com.javadeep.functional.lang.data.Try;
 
 import java.util.LinkedList;
@@ -101,20 +100,22 @@ public final class FunctionalValidator<T> {
     public final FunctionalValidatorResult<T> doValidate() {
 
         long start = System.currentTimeMillis();
-        ValidatorContext context = ValidatorContext.of(ValidationResult.build());
+        ValidationResult result = ValidationResult.build();
 
         try {
             if (isFailFast) {
-                validators.stream()
-                        .peek(v -> context.addErrors(v.apply(element)))
-                        .anyMatch(v -> !context.getResult().isSuccess());
-                return FunctionalValidatorResult.of(element,
-                        Try.of(() -> context.getResult().timeElapsed(System.currentTimeMillis() - start)));
+                for (Function<T, Stream<ValidationError>> validator : validators) {
+                    result.addErrors(validator.apply(element));
+                    if (!result.isSuccess()) {
+                        break;
+                    }
+                }
             } else {
-                validators.stream().forEach(v -> context.addErrors(v.apply(element)));
-                return FunctionalValidatorResult.of(element,
-                        Try.of(() -> context.getResult().timeElapsed(System.currentTimeMillis() - start)));
+                validators.forEach(v -> result.addErrors(v.apply(element)));
+
             }
+            return FunctionalValidatorResult.of(element,
+                    Try.of(() -> result.timeElapsed(System.currentTimeMillis() - start)));
         } catch (Throwable e) {
             return FunctionalValidatorResult.of(element, Try.failure(e));
         }

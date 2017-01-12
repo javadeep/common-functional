@@ -9,6 +9,8 @@ import java.util.concurrent.Callable;
 /**
  * Simple, sophisticated retry handling.
  *
+ * @param <T> Value type of result.
+ *
  * @author baojie02
  * @since 1.0.0
  */

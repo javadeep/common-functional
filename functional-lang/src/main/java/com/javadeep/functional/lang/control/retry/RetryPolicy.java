@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 /**
  * A policy that defines when retries should be performed.
  *
+ * @param <T> Value type of result.
+ *
  * @author baojie
  * @since 1.0.0
  */
