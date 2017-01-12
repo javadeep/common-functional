@@ -1,7 +1,5 @@
 package com.javadeep.functional.lang.control.validator.bo;
 
-import com.javadeep.functional.lang.control.base.Preconditions;
-
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -46,7 +44,7 @@ public final class ValidatorContext {
      */
     public final ValidatorContext addErrorMsg(String msg) {
         Objects.requireNonNull(msg, "msg is null");
-        result.addError(ValidationError.builder(msg).build());
+        result.addError(ValidationError.of(msg));
         return this;
     }
 
@@ -59,7 +57,7 @@ public final class ValidatorContext {
      * @throws IllegalArgumentException if {@code msgs} is empty.
      */
     public final ValidatorContext addErrorMsgs(String... msgs) {
-        Preconditions.checkNotEmpty(msgs, "msgs is empty");
+        Objects.requireNonNull(msgs, "msgs is null");
         return addErrorMsgs(Stream.of(msgs));
     }
 
@@ -69,11 +67,10 @@ public final class ValidatorContext {
      * @param msgs A stream of error message.
      * @return The {@code ValidatorContext} instance itself.
      * @throws NullPointerException if {@code msgs} is null.
-     * @throws IllegalArgumentException if {@code msgs} is empty.
      */
     public final ValidatorContext addErrorMsgs(Stream<String> msgs) {
         Objects.requireNonNull(msgs, "msgs is null");
-        result.addErrors(msgs.map(msg -> ValidationError.builder(msg).build()));
+        result.addErrors(msgs.map(ValidationError::of));
         return this;
     }
 
@@ -83,10 +80,9 @@ public final class ValidatorContext {
      * @param msgs A collection of error message.
      * @return The {@code ValidatorContext} instance itself.
      * @throws NullPointerException if {@code msgs} is null.
-     * @throws IllegalArgumentException if {@code msgs} is empty.
      */
     public final ValidatorContext addErrorMsgs(Collection<String> msgs) {
-        Preconditions.checkNotEmpty(msgs, "msgs is empty");
+        Objects.requireNonNull(msgs, "msgs is null");
         return addErrorMsgs(msgs.stream());
     }
 
@@ -109,10 +105,9 @@ public final class ValidatorContext {
      * @param errors The array of {@code ValidationError}
      * @return The instance of {@code ValidationContext} itself.
      * @throws NullPointerException if {@code errors} is null.
-     * @throws IllegalArgumentException if {@code errors} is empty.
      */
     public final ValidatorContext addErrors(ValidationError... errors) {
-        Preconditions.checkNotEmpty(errors, "errors is empty");
+        Objects.requireNonNull(errors, "errors is null");
         result.addErrors(errors);
         return this;
     }
@@ -123,7 +118,6 @@ public final class ValidatorContext {
      * @param errors A stream of {@code ValidationError}
      * @return The instance of {@code ValidationContext} itself.
      * @throws NullPointerException if {@code errors} is null.
-     * @throws IllegalArgumentException if {@code errors} is empty.
      */
     public final ValidatorContext addErrors(Stream<ValidationError> errors) {
         Objects.requireNonNull(errors, "errors is null");
@@ -137,10 +131,9 @@ public final class ValidatorContext {
      * @param errors A collection of {@code ValidationError}
      * @return The instance of {@code ValidationContext} itself.
      * @throws NullPointerException if {@code errors} is null.
-     * @throws IllegalArgumentException if {@code errors} is empty.
      */
     public final ValidatorContext addErrors(Collection<ValidationError> errors) {
-        Preconditions.checkNotEmpty(errors, "errors is empty");
+        Objects.requireNonNull(errors, "errors is null");
         result.addErrors(errors);
         return this;
     }
@@ -148,6 +141,8 @@ public final class ValidatorContext {
     public ValidationResult getResult() {
         return result;
     }
+
+
 
     @Override
     public boolean equals(Object obj) {

@@ -1,7 +1,5 @@
 package com.javadeep.functional.lang.control.validator.bo;
 
-import com.javadeep.functional.lang.control.base.Preconditions;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,11 +15,9 @@ import java.util.stream.Stream;
  */
 public final class ValidationResult {
 
-    private boolean isSuccess = true;
-
     private List<ValidationError> errors = new LinkedList<>();
 
-    private int timeElapsed;
+    private long timeElapsed;
 
     /**
      * Constructs a {@code ValidationResult}.
@@ -58,10 +54,9 @@ public final class ValidationResult {
      * @param errors The array of {@code ValidationError}
      * @return The instance of {@code ValidationResult} itself.
      * @throws NullPointerException if {@code errors} is null.
-     * @throws IllegalArgumentException if {@code errors} is empty.
      */
     public ValidationResult addErrors(ValidationError... errors) {
-        Preconditions.checkNotEmpty(errors, "errors is empty");
+        Objects.requireNonNull(errors, "errors is null");
         return addErrors(Stream.of(errors));
     }
 
@@ -71,7 +66,6 @@ public final class ValidationResult {
      * @param errors A stream of {@code ValidationError}
      * @return The instance of {@code ValidationResult} itself.
      * @throws NullPointerException if {@code errors} is null.
-     * @throws IllegalArgumentException if {@code errors} is empty.
      */
     public ValidationResult addErrors(Stream<ValidationError> errors) {
         Objects.requireNonNull(errors, "errors is null");
@@ -84,31 +78,10 @@ public final class ValidationResult {
      * @param errors A collection of {@code ValidationError}
      * @return The instance of {@code ValidationResult} itself.
      * @throws NullPointerException if {@code errors} is null.
-     * @throws IllegalArgumentException if {@code errors} is empty.
      */
     public ValidationResult addErrors(Collection<ValidationError> errors) {
-        Preconditions.checkNotEmpty(errors, "errors is empty");
+        Objects.requireNonNull(errors, "errors is null");
         this.errors.addAll(errors);
-        return this;
-    }
-
-    /**
-     * Set the result of validation is success.
-     *
-     * @return The instance of {@code ValidationResult} itself.
-     */
-    public final ValidationResult success() {
-        this.isSuccess = true;
-        return this;
-    }
-
-    /**
-     * Set the result of validation is not success.
-     *
-     * @return The instance of {@code ValidationResult} itself.
-     */
-    public final ValidationResult failure() {
-        this.isSuccess = false;
         return this;
     }
 
@@ -119,13 +92,13 @@ public final class ValidationResult {
      * @param timeElapsed The time elapsed of validation
      * @return The instance of {@code ValidationResult} itself.
      */
-    public final ValidationResult timeElapsed(int timeElapsed) {
+    public final ValidationResult timeElapsed(long timeElapsed) {
         this.timeElapsed = timeElapsed;
         return this;
     }
 
     public boolean isSuccess() {
-        return isSuccess;
+        return errors.isEmpty();
     }
 
 
@@ -133,7 +106,7 @@ public final class ValidationResult {
         return errors;
     }
 
-    public int getTimeElapsed() {
+    public long getTimeElapsed() {
         return timeElapsed;
     }
 
@@ -144,12 +117,11 @@ public final class ValidationResult {
 
     @Override
     public int hashCode() {
-        return Objects.hash(isSuccess, errors, timeElapsed);
+        return Objects.hash(errors, timeElapsed);
     }
 
     @Override
     public String toString() {
-        return String.format("ValidationResult{isSuccess=%s, errors='%s', timeElapsed=%d}",
-                String.valueOf(isSuccess), errors.toString(), timeElapsed);
+        return String.format("ValidationResult{errors='%s', timeElapsed=%d}", errors.toString(), timeElapsed);
     }
 }

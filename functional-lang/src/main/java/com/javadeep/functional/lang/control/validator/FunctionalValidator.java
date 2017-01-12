@@ -1,5 +1,17 @@
 package com.javadeep.functional.lang.control.validator;
 
+import com.javadeep.functional.lang.control.validator.bo.ValidationError;
+import com.javadeep.functional.lang.control.validator.bo.ValidationResult;
+import com.javadeep.functional.lang.control.validator.bo.ValidatorContext;
+import com.javadeep.functional.lang.data.Try;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 /**
  * A functional Chained call validator
  *
@@ -10,6 +22,7 @@ public final class FunctionalValidator<T> {
 
     private final T element;
     private boolean isFailFast = true;
+    private final List<Function<T, Stream<ValidationError>>> validators = new LinkedList<>();
 
     /**
      * Constructs a {@code FunctionalValidator}.
@@ -27,9 +40,9 @@ public final class FunctionalValidator<T> {
      * @param <T> The type of element to be checked
      * @return a new {@code FunctionalValidator} instance.
      */
-    public static <T> FunctionalValidator checkFrom(T element) {
+    public static <T> FunctionalValidator<T> checkFrom(T element) {
 
-        return new FunctionalValidator(element);
+        return new FunctionalValidator<>(element);
     }
 
     /**
@@ -37,7 +50,7 @@ public final class FunctionalValidator<T> {
      *
      * @return the instance of {@code FunctionalValidator} itself.
      */
-    public final FunctionalValidator failFast() {
+    public final FunctionalValidator<T> failFast() {
         isFailFast = true;
         return this;
     }
@@ -47,8 +60,63 @@ public final class FunctionalValidator<T> {
      *
      * @return the instance of {@code FunctionalValidator} itself.
      */
-    public final FunctionalValidator failOver() {
+    public final FunctionalValidator<T> failOver() {
         isFailFast = false;
         return this;
+    }
+
+    public final FunctionalValidator<T> on(Function<T, Stream<ValidationError>> v) {
+        Objects.requireNonNull(v, "v is null");
+        validators.add(v);
+        return this;
+    }
+
+    public final FunctionalValidator<T> on(Predicate<T> validatorPredicate, String errorMsg) {
+        Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
+        Objects.requireNonNull(errorMsg, "errorMsg is null");
+
+        validators.add(t -> validatorPredicate.test(t) ? Stream.empty() : Stream.of(ValidationError.of(errorMsg)));
+
+        return this;
+    }
+
+    public final FunctionalValidator<T> on(Predicate<T> validatorPredicate, ValidationError error) {
+        Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
+        Objects.requireNonNull(error, "error is null");
+
+        validators.add(t -> validatorPredicate.test(t) ? Stream.empty() : Stream.of(error));
+
+        return this;
+    }
+
+    public final FunctionalValidator<T> on(Predicate<T> validatorPredicate, Stream<ValidationError> errors) {
+        Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
+        Objects.requireNonNull(errors, "errors is null");
+
+        validators.add(t -> validatorPredicate.test(t) ? Stream.empty() : errors);
+
+        return this;
+    }
+
+    public final FunctionalValidatorResult<T> doValidate() {
+
+        long start = System.currentTimeMillis();
+        ValidatorContext context = ValidatorContext.of(ValidationResult.build());
+
+        try {
+            if (isFailFast) {
+                validators.stream()
+                        .peek(v -> context.addErrors(v.apply(element)))
+                        .anyMatch(v -> !context.getResult().isSuccess());
+                return FunctionalValidatorResult.of(element,
+                        Try.of(() -> context.getResult().timeElapsed(System.currentTimeMillis() - start)));
+            } else {
+                validators.stream().forEach(v -> context.addErrors(v.apply(element)));
+                return FunctionalValidatorResult.of(element,
+                        Try.of(() -> context.getResult().timeElapsed(System.currentTimeMillis() - start)));
+            }
+        } catch (Throwable e) {
+            return FunctionalValidatorResult.of(element, Try.failure(e));
+        }
     }
 }

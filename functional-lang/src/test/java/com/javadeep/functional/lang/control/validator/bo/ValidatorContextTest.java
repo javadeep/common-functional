@@ -18,12 +18,12 @@ public class ValidatorContextTest {
                 .addErrorMsg("message1")
                 .addErrorMsg("message2")
                 .addErrorMsgs("message3", "message4")
-                .addError(ValidationError.builder("message5").build())
-                .addErrors(ValidationError.builder("message6").build())
+                .addError(ValidationError.of("message5"))
+                .addErrors(ValidationError.of("message6"))
                 .addErrorMsgs(Stream.of("message7").collect(Collectors.toList()))
                 .addErrorMsgs(Stream.of("message8"))
-                .addErrors(Stream.of(ValidationError.builder("message9").build()))
-                .addErrors(Stream.of(ValidationError.builder("message10").build()).collect(Collectors.toList()));
+                .addErrors(Stream.of(ValidationError.of("message9")))
+                .addErrors(Stream.of(ValidationError.of("message10")).collect(Collectors.toList()));
         Assert.assertEquals(10, context.getResult().getErrors().size());
     }
 }

@@ -13,19 +13,17 @@ public class ValidationResultTest {
     @Test
     public void testAddError_addError_success() {
         ValidationResult result = ValidationResult.build()
-                .addError(ValidationError.builder("error").build())
-                .success()
+                .addError(ValidationError.of("error"))
                 .timeElapsed(10);
         Assert.assertEquals(1, result.getErrors().size());
-        Assert.assertEquals(true, result.isSuccess());
+        Assert.assertEquals(false, result.isSuccess());
         Assert.assertEquals(10, result.getTimeElapsed());
     }
 
     @Test
     public void testAddError_addErrors_array_failure() {
         ValidationResult result = ValidationResult.build()
-                .addErrors(ValidationError.builder("failure").build())
-                .failure()
+                .addErrors(ValidationError.of("failure"))
                 .timeElapsed(15);
         Assert.assertEquals(1, result.getErrors().size());
         Assert.assertEquals(false, result.isSuccess());
@@ -35,10 +33,10 @@ public class ValidationResultTest {
     @Test
     public void testAddError_addErrors_collection_success() {
         ValidationResult result = ValidationResult.build()
-                .addErrors(Stream.of(ValidationError.builder("failure").build()))
+                .addErrors(Stream.of(ValidationError.of("failure")))
                 .timeElapsed(20);
         Assert.assertEquals(1, result.getErrors().size());
-        Assert.assertEquals(true, result.isSuccess());
+        Assert.assertEquals(false, result.isSuccess());
         Assert.assertEquals(20, result.getTimeElapsed());
     }
 }
