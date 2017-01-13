@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 /**
  * A functional Chained call validator
  *
+ * @param <T> Value type to be validated.
+ *
  * @author baojie
  * @since 1.0.0
  */
@@ -21,7 +23,7 @@ public final class FunctionalValidator<T> {
 
     private final T element;
     private boolean isFailFast = true;
-    private final List<Function<T, Stream<ValidationError>>> validators = new LinkedList<>();
+    private final List<Function<? super T, Stream<ValidationError>>> validators = new LinkedList<>();
 
     /**
      * Constructs a {@code FunctionalValidator}.
@@ -35,8 +37,8 @@ public final class FunctionalValidator<T> {
     /**
      * Constructs a {@code FunctionalValidator} from an element.
      *
-     * @param element The element to be checked
-     * @param <T> The type of element to be checked
+     * @param element The element to be checked.
+     * @param <T> The type of element to be checked.
      * @return a new {@code FunctionalValidator} instance.
      */
     public static <T> FunctionalValidator<T> checkFrom(T element) {
@@ -64,39 +66,137 @@ public final class FunctionalValidator<T> {
         return this;
     }
 
-    public final FunctionalValidator<T> on(Function<T, Stream<ValidationError>> v) {
+    /**
+     * Add a validator by a {@code Function}
+     *
+     * @param v The validator {@code Function}
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code v} is null.
+     */
+    public final FunctionalValidator<T> on(Function<? super T, Stream<ValidationError>> v) {
         Objects.requireNonNull(v, "v is null");
         validators.add(v);
         return this;
     }
 
-    public final FunctionalValidator<T> on(Predicate<T> validatorPredicate, String errorMsg) {
-        Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
+    /**
+     * Add a validator by a {@code validatorPredicate} and an {@code errorMsg}
+     *
+     * @param validatorPredicate a {@code Predicate} validator
+     * @param errorMsg The error message
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code validatorPredicate} or {@code errorMsg} is null.
+     */
+    public final FunctionalValidator<T> on(Predicate<? super T> validatorPredicate, String errorMsg) {
         Objects.requireNonNull(errorMsg, "errorMsg is null");
-
-        validators.add(t -> validatorPredicate.test(t) ? Stream.empty() : Stream.of(ValidationError.of(errorMsg)));
-
-        return this;
+        return on(validatorPredicate, ValidationError.of(errorMsg));
     }
 
-    public final FunctionalValidator<T> on(Predicate<T> validatorPredicate, ValidationError error) {
-        Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
+    /**
+     * Add a validator by a {@code validatorPredicate} and a {@code ValidationError}
+     *
+     * @param validatorPredicate a {@code Predicate} validator
+     * @param error The validator error
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code validatorPredicate} or {@code error} is null.
+     */
+    public final FunctionalValidator<T> on(Predicate<? super T> validatorPredicate, ValidationError error) {
         Objects.requireNonNull(error, "error is null");
-
-        validators.add(t -> validatorPredicate.test(t) ? Stream.empty() : Stream.of(error));
-
-        return this;
+        return on(validatorPredicate, Stream.of(error));
     }
 
-    public final FunctionalValidator<T> on(Predicate<T> validatorPredicate, Stream<ValidationError> errors) {
+    /**
+     * Add a validator by a {@code validatorPredicate} and a {@code ValidationError} list
+     *
+     * @param validatorPredicate a {@code Predicate} validator
+     * @param errors The validator error list
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code validatorPredicate} or {@code errors} is null.
+     */
+    public final FunctionalValidator<T> on(Predicate<? super T> validatorPredicate, Stream<ValidationError> errors) {
         Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
         Objects.requireNonNull(errors, "errors is null");
+        return on(t -> validatorPredicate.test(t) ? Stream.empty() : errors);
+    }
 
-        validators.add(t -> validatorPredicate.test(t) ? Stream.empty() : errors);
+    /**
+     * Add a validator by a {@code Function} and
+     * a {@code conditionPredicate} to determine whether to do validation the target or not.
+     *
+     * @param v The validator {@code Function}
+     * @param conditionPredicate The condition predicate to determine whether to do validation the target or not.
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code v} or {@code conditionPredicate} is null.
+     */
+    public final FunctionalValidator<T> onIf(Function<? super T, Stream<ValidationError>> v,
+                                              Predicate<? super T> conditionPredicate) {
 
+        Objects.requireNonNull(v, "v is null");
+        Objects.requireNonNull(conditionPredicate, "conditionPredicate is null");
+        validators.add(t -> conditionPredicate.test(t) ? v.apply(t) : Stream.empty());
         return this;
     }
 
+    /**
+     * Add a validator by a {@code validatorPredicate} and an {@code errorMsg} and
+     * a {@code conditionPredicate} to determine whether to do validation the target or not.
+     *
+     * @param validatorPredicate a {@code Predicate} validator.
+     * @param errorMsg The error message.
+     * @param conditionPredicate The condition predicate to determine whether to do validation the target or not.
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code validatorPredicate} or {@code errorMsg}
+     * or {@code conditionPredicate} is null.
+     */
+    public final FunctionalValidator<T> onIf(Predicate<? super T> validatorPredicate, String errorMsg,
+                                             Predicate<? super T> conditionPredicate) {
+        Objects.requireNonNull(errorMsg, "errorMsg is null");
+        return onIf(validatorPredicate, ValidationError.of(errorMsg), conditionPredicate);
+    }
+
+    /**
+     * Add a validator by a {@code validatorPredicate} and a {@code ValidationError} and
+     * a {@code conditionPredicate} to determine whether to do validation the target or not.
+     *
+     * @param validatorPredicate a {@code Predicate} validator.
+     * @param error The validator error.
+     * @param conditionPredicate The condition predicate to determine whether to do validation the target or not.
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code validatorPredicate} or {@code error}
+     * or {@code conditionPredicate} is null.
+     */
+    public final FunctionalValidator<T> onIf(Predicate<? super T> validatorPredicate, ValidationError error,
+                                             Predicate<? super T> conditionPredicate) {
+        Objects.requireNonNull(error, "error is null");
+
+        return onIf(validatorPredicate, Stream.of(error), conditionPredicate);
+    }
+
+    /**
+     * Add a validator by a {@code validatorPredicate} and a {@code ValidationError} list and
+     * a {@code conditionPredicate} to determine whether to do validation the target or not.
+     *
+     * @param validatorPredicate a {@code Predicate} validator.
+     * @param errors The validator error list.
+     * @param conditionPredicate The condition predicate to determine whether to do validation the target or not.
+     * @return the instance of {@code FunctionalValidator} itself.
+     * @throws NullPointerException if {@code validatorPredicate} or {@code errors}
+     * or {@code conditionPredicate} is null.
+     */
+    public final FunctionalValidator<T> onIf(Predicate<? super T> validatorPredicate, Stream<ValidationError> errors,
+                                             Predicate<? super T> conditionPredicate) {
+        Objects.requireNonNull(validatorPredicate, "validatorPredicate is null");
+        Objects.requireNonNull(errors, "errors is null");
+        Objects.requireNonNull(conditionPredicate, "conditionPredicate is null");
+
+        return onIf(t -> validatorPredicate.test(t) ? Stream.empty() : errors, conditionPredicate);
+    }
+
+    /**
+     * Execute validation.
+     *
+     * @return The result of validation.
+     */
     public final FunctionalValidatorResult<T> doValidate() {
 
         long start = System.currentTimeMillis();
@@ -104,7 +204,7 @@ public final class FunctionalValidator<T> {
 
         try {
             if (isFailFast) {
-                for (Function<T, Stream<ValidationError>> validator : validators) {
+                for (Function<? super T, Stream<ValidationError>> validator : validators) {
                     result.addErrors(validator.apply(element));
                     if (!result.isSuccess()) {
                         break;

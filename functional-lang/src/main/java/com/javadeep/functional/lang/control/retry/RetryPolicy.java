@@ -68,7 +68,7 @@ public final class RetryPolicy<T> {
      * @return The instance of <code>RetryPolicy</code>.
      * @throws NullPointerException if {@code resultPredicate} is null.
      */
-    public final RetryPolicy<T> retryIf(Predicate<T> resultPredicate) {
+    public final RetryPolicy<T> retryIf(Predicate<? super T> resultPredicate) {
         Objects.requireNonNull(resultPredicate, "resultPredicate is null");
         retryConditions.add(t -> t.fold(resultPredicate::test, failure -> true));
         return this;
@@ -123,7 +123,7 @@ public final class RetryPolicy<T> {
      * @throws NullPointerException if {@code failurePredicate} is null.
      */
     @SuppressWarnings("unchecked")
-    public final RetryPolicy<T> retryOn(Predicate<? extends Throwable> failurePredicate) {
+    public final RetryPolicy<T> retryOn(Predicate<? super Throwable> failurePredicate) {
         Objects.requireNonNull(failurePredicate, "failurePredicate is null");
         retryConditions.add(t -> t.fold(v -> false, ((Predicate<Throwable>) failurePredicate)::test));
         return this;

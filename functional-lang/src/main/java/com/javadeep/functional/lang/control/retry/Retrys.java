@@ -60,11 +60,11 @@ public final class Retrys<T> {
      * @return the result for executes the {@code callable}.
      * @throws NullPointerException if {@code callable} is null.
      */
-    public final Try<T> get(Callable<T> callable) {
+    public final Try<T> get(Callable<? extends T> callable) {
         return call(Objects.requireNonNull(callable, "callable is null"));
     }
 
-    private Try<T> call(Callable<T> callable) {
+    private Try<T> call(Callable<? extends T> callable) {
         int retryCount = 0;
         Try<T> result = Try.of(callable::call);
         while (retryPolicy.canRetryFor(result, retryCount)) {

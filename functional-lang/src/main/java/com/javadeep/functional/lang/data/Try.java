@@ -253,6 +253,7 @@ public interface Try<T> {
      * @param failureMapper maps the cause if this is a {@code Failure}
      * @param <U> type of the folded value
      * @return A value of type U
+     * @throws NullPointerException if {@code successMapper} or {@code failureMapper} is null
      */
     default <U> U fold(Function<? super T, ? extends U> successMapper,
                        Function<? super Throwable, ? extends U> failureMapper) {
