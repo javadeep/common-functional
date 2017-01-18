@@ -23,9 +23,9 @@ public class FunctionalValidatorTest {
     public void testOn_success() {
         Try<ValidationResult> result = FunctionalValidator.checkFrom(123)
                 .failOver()
-                .on(Objects::nonNull, ValidationError.of("error"))
+                .on(Objects::nonNull, ValidationError.of("error1"))
                 .on(t -> t > 0, "t > 0")
-                .on(t -> t > 0, Stream.of(ValidationError.of("error")))
+                .on(t -> t > 0, Stream.of(ValidationError.of("error2")))
                 .on(t -> Stream.empty())
                 .doValidate()
                 .getResult();
@@ -37,7 +37,7 @@ public class FunctionalValidatorTest {
         Try<ValidationResult> result = FunctionalValidator.<Duration>checkFrom(null)
                 .failFast()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
+                .on(d -> d.toNanos() > 0, "error3")
                 .doValidate()
                 .getResult();
         Assert.assertEquals(false, result.get().isSuccess());
@@ -49,7 +49,7 @@ public class FunctionalValidatorTest {
         FunctionalValidator.<Duration>checkFrom(null)
                 .failOver()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
+                .on(d -> d.toNanos() > 0, "error4")
                 .doValidate()
                 .getResult()
                 .get();
@@ -62,7 +62,7 @@ public class FunctionalValidatorTest {
                 .failFast()
                 .on(Objects::nonNull, "duration is null")
                 .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> false)
+                .onIf(d -> d.toNanos() < 0, "error5", d -> false)
                 .doValidate()
                 .fold(t -> "success", r -> "failure", e -> "exception");
         Assert.assertEquals("success", ret);
@@ -73,8 +73,8 @@ public class FunctionalValidatorTest {
         String ret = FunctionalValidator.checkFrom(Duration.of(3, TimeUnit.DAYS))
                 .failFast()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> true)
+                .on(d -> d.toNanos() > 0, "error6")
+                .onIf(d -> d.toNanos() < 0, "error7", d -> true)
                 .doValidate()
                 .fold(t -> "success", r -> "failure", e -> "exception");
         Assert.assertEquals("failure", ret);
@@ -85,8 +85,8 @@ public class FunctionalValidatorTest {
         String ret = FunctionalValidator.<Duration>checkFrom(null)
             .failOver()
             .on(Objects::nonNull, "duration is null")
-            .on(d -> d.toNanos() > 0, "error")
-            .onIf(d -> d.toNanos() < 0, "error", d -> true)
+            .on(d -> d.toNanos() > 0, "error8")
+            .onIf(d -> d.toNanos() < 0, "error9", d -> true)
             .doValidate()
             .fold(t -> "success", r -> "failure", e -> "exception");
         Assert.assertEquals("exception", ret);
@@ -97,8 +97,8 @@ public class FunctionalValidatorTest {
         FunctionalValidator.<Duration>checkFrom(null)
                 .failOver()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> true)
+                .on(d -> d.toNanos() > 0, "error10")
+                .onIf(d -> d.toNanos() < 0, "error11", d -> true)
                 .doValidate()
                 .foldIgnoreThrowable(t -> "success", r -> "failure");
     }
@@ -109,8 +109,8 @@ public class FunctionalValidatorTest {
         FunctionalValidator.checkFrom(Duration.of(3, TimeUnit.DAYS))
                 .failFast()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> false)
+                .on(d -> d.toNanos() > 0, "error12")
+                .onIf(d -> d.toNanos() < 0, "error13", d -> false)
                 .doValidate()
                 .onResult(result -> longs.set(0, result.isSuccess() ? 1L : 0L));
         Assert.assertEquals(Long.valueOf(1), longs.get(0));
@@ -122,8 +122,8 @@ public class FunctionalValidatorTest {
         FunctionalValidator.checkFrom(Duration.of(3, TimeUnit.DAYS))
                 .failFast()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> false)
+                .on(d -> d.toNanos() > 0, "error14")
+                .onIf(d -> d.toNanos() < 0, "error15", d -> false)
                 .doValidate()
                 .onSuccess(d -> longs.set(0, d.toNanos()));
         Assert.assertTrue(longs.get(0) > 0);
@@ -135,8 +135,8 @@ public class FunctionalValidatorTest {
         FunctionalValidator.checkFrom(Duration.of(3, TimeUnit.DAYS))
                 .failFast()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> true)
+                .on(d -> d.toNanos() > 0, "error16")
+                .onIf(d -> d.toNanos() < 0, "error17", d -> true)
                 .doValidate()
                 .onFailure(result -> longs.set(0, result.isSuccess() ? 2L : 1L));
         Assert.assertEquals(Long.valueOf(1), longs.get(0));
@@ -148,8 +148,8 @@ public class FunctionalValidatorTest {
         FunctionalValidator.<Duration>checkFrom(null)
                 .failOver()
                 .on(Objects::nonNull, "duration is null")
-                .on(d -> d.toNanos() > 0, "error")
-                .onIf(d -> d.toNanos() < 0, "error", d -> true)
+                .on(d -> d.toNanos() > 0, "error18")
+                .onIf(d -> d.toNanos() < 0, "error19", d -> true)
                 .doValidate()
                 .onThrowable(t -> longs.set(0, t instanceof NullPointerException ? 1L : 0L));
         Assert.assertEquals(Long.valueOf(1), longs.get(0));
