@@ -70,7 +70,7 @@ public final class FunctionalValidator<T> {
      * Add a validator by a {@code Function}
      *
      * @param v The validator {@code Function}
-     * @return the instance of {@code FunctionalValidator} itself.
+     * @return The instance of {@code FunctionalValidator} itself.
      * @throws NullPointerException if {@code v} is null.
      */
     public final FunctionalValidator<T> on(Function<? super T, Stream<ValidationError>> v) {
@@ -84,7 +84,7 @@ public final class FunctionalValidator<T> {
      *
      * @param validatorPredicate a {@code Predicate} validator
      * @param errorMsg The error message
-     * @return the instance of {@code FunctionalValidator} itself.
+     * @return The instance of {@code FunctionalValidator} itself.
      * @throws NullPointerException if {@code validatorPredicate} or {@code errorMsg} is null.
      */
     public final FunctionalValidator<T> on(Predicate<? super T> validatorPredicate, String errorMsg) {
