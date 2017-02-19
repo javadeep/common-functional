@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
  *
  * @param <T> Value type of result.
  *
- * @author baojie02
+ * @author baojie
  * @since 1.0.0
  */
 public final class Retrys<T> {
