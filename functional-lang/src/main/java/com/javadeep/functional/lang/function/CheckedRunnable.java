@@ -19,10 +19,10 @@ public interface CheckedRunnable {
     void run() throws Throwable;
 
     /**
-     * Transform <code>CheckedRunnable</code> to <code>Callable</code>.
+     * Transform {@code CheckedRunnable} to {@code Callable}.
      *
      * @param <T> the result type.
-     * @return The result function of <code>Callable</code>.
+     * @return The result function of {@code Callable}.
      */
     default <T> Callable<T> toCallable() {
         return () -> {

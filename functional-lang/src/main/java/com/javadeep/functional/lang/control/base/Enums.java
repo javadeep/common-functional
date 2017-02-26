@@ -2,10 +2,16 @@ package com.javadeep.functional.lang.control.base;
 
 
 import com.javadeep.functional.lang.control.base.annotation.Value;
+import com.javadeep.functional.lang.data.Tuple2;
+import com.javadeep.functional.lang.function.Functions;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Tools for Enum
@@ -41,16 +47,12 @@ public final class Enums {
         E[] enumValues = enumType.getEnumConstants();
 
         try {
-            Map<String, E> resultMap = new HashMap<>();
-            for (Method method : enumType.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(Value.class)) {
-                    for (E enumValue : enumValues) {
-                        Object value = method.invoke(enumValue);
-                        resultMap.put(computeKey(value), enumValue);
-                    }
-                }
-            }
-            return resultMap;
+            return Stream.of(enumType.getDeclaredMethods())
+                    .filter(method -> method.isAnnotationPresent(Value.class))
+                    .flatMap(method -> Stream.of(enumValues)
+                            .map((Functions.uncheckedFunction(v -> Tuple2.of(method.invoke(v), v)))))
+                    .collect(Collectors.toMap(t -> computeKey(t.t1()), Tuple2::t2));
+
         } catch (Exception e) {
             return Collections.emptyMap();
         }
