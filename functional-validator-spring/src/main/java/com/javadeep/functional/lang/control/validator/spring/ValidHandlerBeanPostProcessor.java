@@ -19,6 +19,7 @@ import java.util.stream.Stream;
  * @since 1.0.0
  */
 @Component
+@SuppressWarnings("unused")
 public class ValidHandlerBeanPostProcessor implements BeanPostProcessor {
 
     @Override

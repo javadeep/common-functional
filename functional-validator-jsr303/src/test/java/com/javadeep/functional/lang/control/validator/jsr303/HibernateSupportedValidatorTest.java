@@ -65,7 +65,7 @@ public class HibernateSupportedValidatorTest {
         String name = department.getName();
         Assert.assertFalse(FunctionalValidator.checkFrom(department)
                 .on(HibernateSupportedValidator
-                        .buildByFailoverValidator()
+                        .buildByFailOverValidator()
                         .errorCode(id)
                         .transformer(v -> {
                             throw new NullPointerException(name);

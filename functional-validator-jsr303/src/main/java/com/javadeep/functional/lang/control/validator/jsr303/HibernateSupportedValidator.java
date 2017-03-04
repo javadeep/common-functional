@@ -68,7 +68,7 @@ public final class HibernateSupportedValidator {
      *
      * @return a new {@code HibernateSupportedValidator} instance.
      */
-    public static HibernateSupportedValidator buildByFailoverValidator() {
+    public static HibernateSupportedValidator buildByFailOverValidator() {
         return buildByValidator(FAILOVER_VALIDATOR);
     }
 
