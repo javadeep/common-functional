@@ -11,6 +11,7 @@ import java.util.Objects;
 public final class ValidationError {
 
     private final String errorMsg;
+    private final Object[] params;
     private String field;
     private int errorCode;
     private Object invalidValue;
@@ -20,20 +21,23 @@ public final class ValidationError {
      *
      * @param errorMsg The error message
      */
-    private ValidationError(String errorMsg) {
+    private ValidationError(String errorMsg, Object[] params) {
         this.errorMsg = errorMsg;
+        this.params = params;
     }
 
     /**
-     * Constructs a {@code ValidationError} from {@code errorMsg}.
+     * Construct a {@code ValidationError} from {@code errorMsg}.
      *
      * @param errorMsg The error message.
+     * @param params The params of the {@code errorMsg}
      * @return The {@code ValidationError} instance.
-     * @throws NullPointerException if {@code errorMsg} is null
+     * @throws NullPointerException if {@code errorMsg} or {@code params} is null
      */
-    public static ValidationError of(String errorMsg) {
+    public static ValidationError of(String errorMsg, Object... params) {
         Objects.requireNonNull(errorMsg);
-        return new ValidationError(errorMsg);
+        Objects.requireNonNull(params);
+        return new ValidationError(errorMsg, params);
     }
 
     /**
@@ -72,6 +76,10 @@ public final class ValidationError {
 
     public String getErrorMsg() {
         return errorMsg;
+    }
+
+    public Object[] getParams() {
+        return params;
     }
 
     public String getField() {

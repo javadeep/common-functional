@@ -17,6 +17,12 @@ public final class ValidationResult {
 
     private List<ValidationError> errors = new LinkedList<>();
 
+    private boolean success = true;
+
+    private int globalErrorCode;
+
+    private String globalErrorMessage;
+
     private long timeElapsed;
 
     /**
@@ -36,7 +42,37 @@ public final class ValidationResult {
     }
 
     /**
-     * Add an {@code ValidationError}
+     * Add a {@code globalErrorCode} and {@code globalErrorMessage}.
+     *
+     * @param globalErrorCode The global error code.
+     * @param globalErrorMessage The global error message.
+     * @return The instance of {@code ValidationResult} itself.
+     * @throws NullPointerException if {@code globalErrorCode} or {@code globalErrorMessage} is null.
+     */
+    public final ValidationResult addGlobalError(int globalErrorCode, String globalErrorMessage) {
+        Objects.requireNonNull(globalErrorMessage, "globalErrorMessage is null");
+        this.globalErrorCode = globalErrorCode;
+        this.globalErrorMessage = globalErrorMessage;
+        success = false;
+        return this;
+    }
+
+    /**
+     * Add a {@code globalErrorMessage}
+     *
+     * @param globalErrorMessage The global error message.
+     * @return The instance of {@code ValidationResult} itself.
+     * @throws NullPointerException if {@code globalErrorCode} or {@code globalErrorMessage} is null.
+     */
+    public final ValidationResult addGlobalError(String globalErrorMessage) {
+        this.globalErrorMessage = Objects.requireNonNull(globalErrorMessage, "error is null");
+        success = false;
+        return this;
+    }
+
+
+    /**
+     * Add a {@code ValidationError}
      *
      * @param error The {@code ValidationError}
      * @return The instance of {@code ValidationResult} itself.
@@ -45,6 +81,7 @@ public final class ValidationResult {
     public final ValidationResult addError(ValidationError error) {
         Objects.requireNonNull(error, "error is null");
         errors.add(error);
+        success = false;
         return this;
     }
 
@@ -81,7 +118,11 @@ public final class ValidationResult {
      */
     public ValidationResult addErrors(Collection<ValidationError> errors) {
         Objects.requireNonNull(errors, "errors is null");
+        if (errors.isEmpty()) {
+            return this;
+        }
         this.errors.addAll(errors);
+        success = false;
         return this;
     }
 
@@ -98,7 +139,15 @@ public final class ValidationResult {
     }
 
     public boolean isSuccess() {
-        return errors.isEmpty();
+        return success;
+    }
+
+    public int getGlobalErrorCode() {
+        return globalErrorCode;
+    }
+
+    public String getGlobalErrorMessage() {
+        return globalErrorMessage;
     }
 
 

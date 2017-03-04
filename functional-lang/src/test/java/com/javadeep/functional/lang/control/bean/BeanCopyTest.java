@@ -50,8 +50,9 @@ public class BeanCopyTest {
                     t.setId(s.getId());
                     t.setName(s.getName());
                 })
+                .set(t -> t.setName("newName"))
                 .get();
         Assert.assertEquals(Integer.valueOf(1), targetDepartment.getId());
-        Assert.assertEquals("name", targetDepartment.getName());
+        Assert.assertEquals("newName", targetDepartment.getName());
     }
 }

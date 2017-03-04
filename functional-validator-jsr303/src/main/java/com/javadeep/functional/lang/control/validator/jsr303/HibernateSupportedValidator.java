@@ -1,11 +1,11 @@
 package com.javadeep.functional.lang.control.validator.jsr303;
 
 import com.javadeep.functional.lang.control.validator.bo.ValidationError;
+import org.hibernate.validator.HibernateValidator;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
@@ -27,15 +27,22 @@ public final class HibernateSupportedValidator {
             .field(v.getPropertyPath().toString())
             .invalidValue(v.getInvalidValue());
 
-    /**
-     * A Default Validator instance
-     */
-    private static Validator HIBERNATE_VALIDATOR;
+
+    public static final Validator FAILFAST_VALIDATOR;
+    public static final Validator FAILOVER_VALIDATOR;
 
     static {
         Locale.setDefault(Locale.ENGLISH);
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        HIBERNATE_VALIDATOR = factory.getValidator();
+        FAILFAST_VALIDATOR = Validation.byProvider(HibernateValidator.class)
+                .configure()
+                .failFast(true)
+                .buildValidatorFactory()
+                .getValidator();
+        FAILOVER_VALIDATOR = Validation.byProvider(HibernateValidator.class)
+                .configure()
+                .failFast(false)
+                .buildValidatorFactory()
+                .getValidator();
     }
 
     /**
@@ -48,12 +55,21 @@ public final class HibernateSupportedValidator {
     }
 
     /**
-     * Constructs a {@code HibernateSupportedValidator} by a default {@code Validator}
+     * Constructs a {@code HibernateSupportedValidator} by a {@code FAILFAST_VALIDATOR}
      *
      * @return a new {@code HibernateSupportedValidator} instance.
      */
     public static HibernateSupportedValidator build() {
-        return buildByValidator(HIBERNATE_VALIDATOR);
+        return buildByValidator(FAILFAST_VALIDATOR);
+    }
+
+    /**
+     * Constructs a {@code HibernateSupportedValidator} by a {@code FAILOVER_VALIDATOR}
+     *
+     * @return a new {@code HibernateSupportedValidator} instance.
+     */
+    public static HibernateSupportedValidator buildByFailoverValidator() {
+        return buildByValidator(FAILOVER_VALIDATOR);
     }
 
     /**

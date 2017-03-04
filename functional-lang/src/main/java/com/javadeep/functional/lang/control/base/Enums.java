@@ -6,10 +6,10 @@ import com.javadeep.functional.lang.data.Tuple2;
 import com.javadeep.functional.lang.function.Functions;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  */
 public final class Enums {
 
-    private static ConcurrentHashMap<String, Map<String, Enum<?>>> cache = new ConcurrentHashMap<>();
+    private static Map<String, Map<String, Enum<?>>> cache = new HashMap<>();
 
     /**
      * Get the enum instance from {@code value}.
@@ -30,31 +30,36 @@ public final class Enums {
      * @param enumType The class of enum.
      * @param <E> The enum Type.
      * @return The enum instance.
+     * @throws NullPointerException if {@code value} or {@code enumType} is null
      */
     @SuppressWarnings("unchecked")
     public static <E extends Enum<E>> Optional<E> find(Object value, Class<E> enumType) {
         Objects.requireNonNull(value, "value is null");
         Objects.requireNonNull(enumType, "enumType is null");
 
-        Map<String, ?> resultMap = cache.computeIfAbsent(enumType.getName(),
-                s -> (Map<String, Enum<?>>) computeResultMap(enumType));
-        return Optional.ofNullable((E) resultMap.get(computeKey(value)));
+        if (!cache.containsKey(enumType.getName())) {
+            computeAndSet(enumType);
+        }
+        return Optional.ofNullable((E) cache.get(enumType.getName()).get(computeKey(value)));
     }
 
+    private synchronized static <E extends Enum<E>> void computeAndSet(Class<E> enumType) {
 
-    private static <E extends Enum<E>> Map<String, E> computeResultMap(Class<E> enumType) {
+        if (cache.containsKey(enumType.getName())) {
+            return;
+        }
 
         E[] enumValues = enumType.getEnumConstants();
 
         try {
-            return Stream.of(enumType.getDeclaredMethods())
+            cache.put(enumType.getName(), Stream.of(enumType.getDeclaredMethods())
                     .filter(method -> method.isAnnotationPresent(Value.class))
                     .flatMap(method -> Stream.of(enumValues)
                             .map((Functions.uncheckedFunction(v -> Tuple2.of(method.invoke(v), v)))))
-                    .collect(Collectors.toMap(t -> computeKey(t.t1()), Tuple2::t2));
+                    .collect(Collectors.toMap(t -> computeKey(t.t1()), Tuple2::t2)));
 
         } catch (Exception e) {
-            return Collections.emptyMap();
+            cache.put(enumType.getName(), Collections.emptyMap());
         }
     }
 
