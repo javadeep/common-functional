@@ -21,6 +21,10 @@ import java.util.stream.Stream;
  */
 public final class Enums {
 
+    private Enums() {
+        throw new UnsupportedOperationException();
+    }
+
     private static Map<String, Map<String, Enum<?>>> cache = new HashMap<>();
 
     /**

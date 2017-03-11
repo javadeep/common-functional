@@ -75,5 +75,9 @@ public class HibernateSupportedValidatorTest {
                 .isSuccess());
     }
 
-
+    @Test
+    public void testValidateDefault() {
+        Department department = new Department(123, "bjbef");
+        Assert.assertFalse(HibernateSupportedValidator.validateDefault(department));
+    }
 }
