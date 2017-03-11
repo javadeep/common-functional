@@ -25,7 +25,6 @@ public final class Optionals {
      * @param <T> The type of value.
      * @throws NullPointerException if {@code value} or {@code consumer} or {@code runnable} is null
      */
-    @SuppressWarnings("")
     public static <T> void consume(Optional<T> value, Consumer<T> consumer, Runnable runnable) {
 
         Objects.requireNonNull(value, "value is null");
