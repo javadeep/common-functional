@@ -83,12 +83,12 @@ public class FunctionalValidatorTest {
     @Test
     public void testOnIf_fold_exception() {
         String ret = FunctionalValidator.<Duration>checkFrom(null)
-            .failOver()
-            .on(Objects::nonNull, "duration is null")
-            .on(d -> d.toNanos() > 0, "error8")
-            .onIf(d -> d.toNanos() < 0, "error9", d -> true)
-            .doValidate()
-            .fold(t -> "success", r -> "failure", e -> "exception");
+                .failOver()
+                .on(Objects::nonNull, "duration is null")
+                .on(d -> d.toNanos() > 0, "error8")
+                .onIf(d -> d.toNanos() < 0, "error9", d -> true)
+                .doValidate()
+                .fold(t -> "success", r -> "failure", e -> "exception");
         Assert.assertEquals("exception", ret);
     }
 

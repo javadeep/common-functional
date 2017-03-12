@@ -1,6 +1,7 @@
 package com.javadeep.functional.lang.control.validator.jsr303;
 
 import com.javadeep.functional.lang.control.validator.FunctionalValidator;
+import com.javadeep.functional.lang.control.validator.FunctionalValidatorResult;
 import com.javadeep.functional.lang.control.validator.bo.ValidationError;
 import org.hibernate.validator.HibernateValidator;
 
@@ -63,10 +64,21 @@ public final class HibernateSupportedValidator {
      * @return Whether the result of validator is success.
      */
     public static <T> boolean validateDefault(T element) {
+        return validatorDefaultResult(element)
+                .isSuccess();
+    }
+
+    /**
+     * Do default hibernate validate.
+     *
+     * @param element element The element to be checked.
+     * @param <T> Value type to be validated.
+     * @return The result of validator.
+     */
+    public static <T> FunctionalValidatorResult<T> validatorDefaultResult(T element) {
         return FunctionalValidator.checkFrom(element)
                 .on(HibernateSupportedValidator.build().validator())
-                .doValidate()
-                .isSuccess();
+                .doValidate();
     }
 
     /**
