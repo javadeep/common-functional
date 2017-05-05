@@ -3,6 +3,7 @@ package com.javadeep.functional.lang.control.bean;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Copy the property values of the given source bean into the target bean.
@@ -27,6 +28,34 @@ public final class BeanCopy<S, T> {
     private BeanCopy(S source, T target) {
         this.source = source;
         this.target = target;
+    }
+
+    /**
+     * Transform beancopy to a {@code Function}
+     *
+     * @param targetClass The class target value.
+     * @param actions The copy actions
+     * @param <S> Value type of given source bean.
+     * @param <T> value type of the target bean.
+     * @return The {@code Function}
+     * @throws NullPointerException if {@code target} is null.
+     */
+    public static <S, T> Function<S, T> toFunction(Class<T> targetClass, BiConsumer<? super S, ? super T> ... actions) {
+
+        Objects.requireNonNull(targetClass, "targetClass is null");
+
+        return s -> {
+            try {
+                final T target = targetClass.newInstance();
+                BeanCopy<S, T> beanCopy = BeanCopy.of(s, target);
+                for (BiConsumer<? super S, ? super T> action : actions) {
+                    beanCopy = beanCopy.copy(action);
+                }
+                return beanCopy.get();
+            } catch (Exception e) {
+                return null;
+            }
+        };
     }
 
     /**

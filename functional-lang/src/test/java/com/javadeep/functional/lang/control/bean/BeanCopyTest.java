@@ -9,7 +9,7 @@ import org.junit.Test;
  */
 public class BeanCopyTest {
 
-    public class Department {
+    public static class Department {
 
         private Integer id;
 
@@ -43,7 +43,7 @@ public class BeanCopyTest {
     }
 
     @Test
-    public void testBeanCopy() {
+    public void testOf() {
         Department sourceDepartment = new Department(1, "name");
         Department targetDepartment = BeanCopy.of(sourceDepartment, new Department())
                 .copy((s, t) -> {
@@ -54,5 +54,14 @@ public class BeanCopyTest {
                 .get();
         Assert.assertEquals(Integer.valueOf(1), targetDepartment.getId());
         Assert.assertEquals("newName", targetDepartment.getName());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testToFunction() {
+        Department sourceDepartment = new Department(1, "name");
+        Department targetDepartment = BeanCopy.<Department, Department>toFunction(Department.class,
+                (s, t) -> t.setName(s.getName())).apply(sourceDepartment);
+        Assert.assertEquals("name", targetDepartment.getName());
     }
 }
