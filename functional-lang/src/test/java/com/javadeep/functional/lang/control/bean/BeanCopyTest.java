@@ -57,11 +57,29 @@ public class BeanCopyTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testToFunction() {
         Department sourceDepartment = new Department(1, "name");
         Department targetDepartment = BeanCopy.<Department, Department>toFunction(Department.class,
                 (s, t) -> t.setName(s.getName())).apply(sourceDepartment);
         Assert.assertEquals("name", targetDepartment.getName());
+    }
+
+    @Test
+    public void testOfNullable_source_null() {
+        Assert.assertNull(BeanCopy.ofNullable(null, Department.class).get());
+    }
+
+    @Test
+    public void testOfNullable_source_not_null() {
+        Department sourceDepartment = new Department(1, "name");
+        Department targetDepartment = BeanCopy.ofNullable(sourceDepartment, Department.class)
+                .copy((s, t) -> {
+                    t.setId(s.getId());
+                    t.setName(s.getName());
+                })
+                .set(t -> t.setName("newName"))
+                .get();
+        Assert.assertEquals(Integer.valueOf(1), targetDepartment.getId());
+        Assert.assertEquals("newName", targetDepartment.getName());
     }
 }

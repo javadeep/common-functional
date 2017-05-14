@@ -60,7 +60,7 @@ public final class Enums {
                     .filter(method -> method.isAnnotationPresent(Value.class))
                     .flatMap(method -> Stream.of(enumValues)
                             .map((Functions.uncheckedFunction(v -> Tuple2.of(method.invoke(v), v)))))
-                    .collect(Collectors.toMap(t -> computeKey(t.t1()), Tuple2::t2)));
+                    .collect(Collectors.toMap(t -> computeKey(t.t1()), Tuple2::t2, (a, b) -> a)));
 
         } catch (Exception e) {
             cache.put(enumType.getName(), Collections.emptyMap());
