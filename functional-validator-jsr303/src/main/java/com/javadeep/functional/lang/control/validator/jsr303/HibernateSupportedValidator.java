@@ -34,7 +34,6 @@ public final class HibernateSupportedValidator {
     public static final Validator FAILOVER_VALIDATOR;
 
     static {
-        Locale.setDefault(Locale.ENGLISH);
         FAILFAST_VALIDATOR = Validation.byProvider(HibernateValidator.class)
                 .configure()
                 .failFast(true)
